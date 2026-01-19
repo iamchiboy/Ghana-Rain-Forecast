@@ -4,8 +4,8 @@ import joblib
 
 st.title("🌧️ Ghana Rain Nowcasting Dashboard")
 
-model = joblib.load("../src/rain_model.pkl")
-df = pd.read_csv("../data/processed/weather_features.csv")
+model = joblib.load("src/rain_model.pkl")
+df = pd.read_csv("data/processed/weather_features.csv")
 
 latest = df.iloc[-1]
 
