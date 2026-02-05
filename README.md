@@ -1,73 +1,288 @@
 # Ghana Rain Nowcasting (30-Minute Prediction)
 
-This project is a real-time machine learning system that predicts whether it will rain 30 minutes ahead in Ghana using live weather data. The goal is to improve short-term climate awareness and demonstrate the full ML pipeline from data collection to deployment.
+**An AI-powered machine learning system for real-time rainfall forecasting in Accra, Ghana**
 
-## Overview
+This project collects real-time weather data, engineers predictive features, trains a machine learning model, and provides 30-minute rain forecasts through an interactive web dashboard.
 
-This project collects real-time weather data, processes it, trains a predictive model, and provides rainfall forecasting through an interactive dashboard.
+## 🌟 Features
 
-## Features
+- ✅ **Real-time Data Collection** - Automatic weather data fetching every 10 minutes
+- ✅ **Advanced Feature Engineering** - Rolling windows, lag features, derived meteorological indicators
+- ✅ **Robust ML Model** - Random Forest with cross-validation and performance metrics
+- ✅ **Prediction Confidence** - Probability scores and confidence levels for each forecast
+- ✅ **Interactive Dashboard** - Beautiful Streamlit interface with charts and metrics
+- ✅ **Production-Ready** - Error handling, logging, validation, and monitoring
+- ✅ **Secure** - Environment variable management for API keys
 
-- **Real-time Data Collection**: Fetches weather data from OpenWeatherMap API
-- **Data Preprocessing**: Cleans and prepares weather data for model training
-- **Machine Learning Model**: Trains a predictive model to forecast rainfall
-- **Interactive Dashboard**: Streamlit-based dashboard for viewing predictions
-- **Automated Pipeline**: Scripts for the complete ML workflow
-
-## System Architecture
-
-OpenWeather API
-      ↓
-Data Collector (every 10 minutes)
-      ↓
-Feature Engineering & Labeling
-      ↓
-ML Model (Random Forest)
-      ↓
-Prediction (Rain / No Rain)
-      ↓
-Streamlit Dashboard
-
-## Project Structure
+## 🏗️ System Architecture
 
 ```
-Ghana Rain Nowcast/
+OpenWeather API (10-min interval)
+        ↓
+Data Collection & Validation
+        ↓
+Feature Engineering (rolling, lag, derived features)
+        ↓
+Data Cleaning & Preprocessing
+        ↓
+Train/Test Split with Stratification
+        ↓
+Random Forest Classifier (300 trees)
+        ↓
+Cross-Validation & Metrics
+        ↓
+Live Prediction Module
+        ↓
+Streamlit Dashboard (Real-time visualization)
+```
+
+## 📁 Project Structure
+
+```
+Ghana Rain Forecast/
 ├── app/
-│   └── dashboard.py          # Streamlit dashboard application
+│   └── dashboard.py              # Streamlit web dashboard
 ├── src/
-│   ├── collect_data.py       # Fetch weather data from API
-│   ├── preprocess.py         # Data cleaning and preprocessing
-│   ├── train_model.py        # Model training script
-│   └── predict.py            # Make predictions on new data
+│   ├── __init__.py
+│   ├── config.py                 # Centralized configuration
+│   ├── logger.py                 # Logging setup
+│   ├── collect_data.py           # API data collection with validation
+│   ├── preprocess.py             # Feature engineering & preprocessing
+│   ├── train_model.py            # Model training with validation
+│   ├── predict.py                # Prediction module with confidence scores
+│   ├── rain_model.pkl            # Trained model (generated)
+│   ├── model_metrics.json        # Model evaluation metrics (generated)
+│   └── feature_importance.png    # Feature importance chart (generated)
 ├── data/
-│   ├── raw/                  # Raw weather data from API
-│   └── processed/            # Processed data for modeling
-├── requirements.txt          # Python dependencies
-├── openweather.env          # API configuration (not in git)
-└── README.md                # This file
+│   ├── raw/
+│   │   └── weather_accra.csv     # Raw API data (not in git)
+│   └── processed/
+│       └── weather_features.csv  # Engineered features (not in git)
+├── logs/
+│   └── app.log                   # Application logs (generated)
+├── requirements.txt              # Python dependencies
+├── .gitignore                    # Git ignore rules
+├── openweather.env               # API key (not in git)
+└── README.md                     # This file
 ```
 
-## Installation
+## 📋 Installation
 
-1. Clone the repository:
+### Prerequisites
+- Python 3.8+
+- OpenWeatherMap API key (free at https://openweathermap.org/api)
+
+### Setup Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd "Ghana Rain Forecast"
+   ```
+
+2. **Create and activate virtual environment**
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # Windows
+   # or: source .venv/bin/activate  # macOS/Linux
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure API key**
+   ```bash
+   # Create openweather.env file with:
+   OPENWEATHER_API_KEY=your_api_key_here
+   ```
+
+## 🚀 Quick Start
+
+### 1. Start Data Collection (Run in background)
 ```bash
-git clone <your-repo-url>
-cd "Ghana Rain Forecast"
+python -m src.collect_data
 ```
+Collects weather data every 10 minutes. Let it run for at least 2-3 hours to gather sufficient training data.
 
-2. Create a virtual environment:
+### 2. Preprocess Data
 ```bash
-python -m venv .venv
-.venv\Scripts\activate  # On Windows
-# or: source .venv/bin/activate  # On macOS/Linux
+python -m src.preprocess
 ```
+Engineers features and prepares data for model training.
 
-3. Install dependencies:
+### 3. Train Model
 ```bash
-pip install -r requirements.txt
+python -m src.train_model
+```
+Trains Random Forest classifier with cross-validation and generates performance metrics.
+
+### 4. View Predictions
+```bash
+streamlit run app/dashboard.py
+```
+Launches the interactive dashboard at `http://localhost:8501`
+
+### 5. Make Single Prediction
+```bash
+python -m src.predict
+```
+Shows current 30-minute rain forecast in terminal.
+
+## 📊 Model Performance
+
+The model is evaluated using:
+- **Accuracy**: Overall correctness of predictions
+- **F1-Score**: Balance between precision and recall (important for imbalanced data)
+- **Precision**: How often rain prediction is correct
+- **Recall**: Ability to catch actual rain events
+- **ROC-AUC**: Model discrimination ability
+- **Cross-Validation**: 5-fold stratified validation
+
+## 🔍 Feature Engineering
+
+The model uses:
+
+### Raw Features
+- Temperature (°C)
+- Humidity (%)
+- Pressure (hPa)
+- Wind Speed (m/s)
+- Wind Direction (degrees)
+- Cloud Cover (%)
+- Visibility (m)
+- Hourly Rainfall (mm)
+
+### Engineered Features
+- **Rolling Averages**: 3-period rolling mean and std dev
+- **Lag Features**: Previous 1 and 2 timesteps
+- **Derived Features**:
+  - Humidity change rate
+  - Pressure drop (indicator of rain)
+  - Temperature change
+  - Dew point approximation
+
+## ⚙️ Configuration
+
+Edit `src/config.py` to customize:
+- API settings (timeout, retries, intervals)
+- Data paths
+- Feature engineering parameters
+- Model hyperparameters
+- Validation thresholds
+- Dashboard settings
+
+## 📈 Dashboard Features
+
+- **Real-time Forecast**: Current 30-minute rain prediction
+- **Prediction Confidence**: Probability and confidence level
+- **Weather Metrics**: Current temperature, humidity, wind, pressure
+- **Trend Charts**: Interactive Plotly charts showing:
+  - Temperature trends
+  - Humidity & Pressure
+  - Rainfall history
+- **Model Info**: Performance metrics and feature importance
+
+## 🔒 Security & Best Practices
+
+- ✅ API keys stored in `.env` file (not committed)
+- ✅ Comprehensive logging for debugging
+- ✅ Data validation at collection and preprocessing stages
+- ✅ Error handling with retry logic
+- ✅ Stratified train/test split to handle class imbalance
+- ✅ Cross-validation to prevent overfitting
+
+## 📝 Logs
+
+Application logs are saved to `logs/app.log` with:
+- Timestamp
+- Module name
+- Log level (INFO, DEBUG, ERROR, WARNING)
+- Descriptive messages
+
+## 🐛 Troubleshooting
+
+### No data collected
+- Verify API key in `openweather.env`
+- Check internet connection
+- Ensure data directory exists: `mkdir -p data/raw data/processed`
+
+### Preprocessing fails
+- Ensure at least 50 data points: `python -m src.collect_data` for ~8 hours
+- Check `logs/app.log` for specific errors
+
+### Dashboard not loading predictions
+- Run preprocessing first: `python -m src.preprocess`
+- Verify processed data exists: `data/processed/weather_features.csv`
+
+### Model training fails
+- Need minimum 100 data points
+- Check for data quality issues in logs
+- Ensure balanced dataset (both rain and no-rain samples)
+
+## 📚 Data Requirements
+
+- **Minimum data points**: 100 samples
+- **Collection interval**: 10 minutes
+- **Recommended history**: 2-3 weeks for production
+- **Features**: Must have timestamp, weather metrics, and rain indicator
+
+## 🔄 Automated Workflow
+
+For production deployment, consider:
+
+```bash
+# Collect data continuously (background)
+nohup python -m src.collect_data > logs/collect.log 2>&1 &
+
+# Schedule preprocessing and training (daily)
+# Use cron (Linux/Mac) or Task Scheduler (Windows)
+
+# Run dashboard
+streamlit run app/dashboard.py
 ```
 
-4. Set up API credentials:
+## 📊 Model Improvement Ideas
+
+1. **Add more weather stations** - Aggregate data from multiple locations
+2. **Ensemble methods** - Combine multiple models
+3. **Deep learning** - LSTM/GRU for sequence modeling
+4. **External features** - Seasonal indicators, time of day, day of week
+5. **Hyperparameter tuning** - GridSearch or Bayesian optimization
+6. **Class balancing** - SMOTE or class weights
+
+## 👨‍💻 Development
+
+To contribute improvements:
+
+1. Create a feature branch
+2. Test changes locally
+3. Update documentation
+4. Submit pull request
+
+## 📄 License
+
+[Your License Here]
+
+## 🤝 Support
+
+For issues or questions, please:
+- Check the logs: `cat logs/app.log`
+- Review troubleshooting section above
+- Open an issue on GitHub
+
+## 📞 Contact
+
+**Ghana Rain Nowcasting Team**
+- Email: [your-email]
+- GitHub: [your-github]
+
+---
+
+**Last Updated**: February 2026
+
+**Status**: ✅ Production Ready
    - Create an `openweather.env` file in the root directory
    - Add your OpenWeatherMap API key:
    ```
