@@ -5,9 +5,13 @@ import streamlit as st
 import pandas as pd
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 import plotly.graph_objects as go
 import plotly.express as px
+
+# Add parent directory to path to resolve src imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.predict import get_prediction_summary
 from src.config import (
@@ -56,8 +60,14 @@ def load_processed_data():
     """Load processed weather data with caching."""
     try:
         df = pd.read_csv(PROCESSED_DATA_PATH)
-        df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
-        df = df.dropna(subset=['timestamp'])
+        # Add index as pseudo-timestamp if timestamp column doesn't exist
+        if 'timestamp' not in df.columns:
+            df['timestamp'] = pd.to_datetime(datetime.now()) - pd.to_timedelta(
+                range(len(df) - 1, -1, -1), unit='min'
+            )
+        else:
+            df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+            df = df.dropna(subset=['timestamp'])
         return df.sort_values('timestamp')
     except Exception as e:
         logger.error(f"Error loading data: {str(e)}")
